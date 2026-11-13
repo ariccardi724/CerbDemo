@@ -9,7 +9,7 @@ H-pattern tracking, Random saccades, VOR x1 with letter, Optokinetic stripes (le
 Patterns, Grocery aisle, Neural matrix, Driving, Boat deck, Screen scroll — each at levels 1 to 6.
 
 ## Controls
-Target speed, background theme, background level, and forward speed (Neural matrix and Driving only).
+Each exercise runs for 15 seconds. Controls: target speed, background theme, background level, and forward speed (Neural matrix and Driving only).
 
 ## Hosting on GitHub Pages
 1. Create a new repository and upload `index.html`, `.nojekyll` and this README to the root.

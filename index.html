@@ -905,6 +905,17 @@ html[data-contrast="high"] .start .vr3d{filter:none;-webkit-text-fill-color:#ffe
 .dm-go .btn{font-size:1.1rem;padding:14px 26px}
 .dm-go small{color:var(--muted)}
 .dm-foot{margin-top:28px;color:var(--muted);font-size:.9rem}
+.dm-copy{margin:0 0 10px;font-weight:700;letter-spacing:.02em;color:var(--ink);text-align:center}
+.dm-copy-b{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.dm-big{display:flex;flex-direction:column;align-items:center;margin:2px auto 22px;padding:10px 10px 14px;max-width:560px;border:1.5px solid var(--accent);border-radius:18px;background:var(--accent-soft);color:var(--accent);font-family:var(--display);font-weight:900;font-size:clamp(2.6rem,9vw,6rem);line-height:.95;letter-spacing:.08em;text-align:center;animation:dmPulse 3.2s ease-in-out infinite}
+.dm-big span{font-size:clamp(.85rem,1.8vw,1.05rem);letter-spacing:.04em;margin-top:6px;font-weight:700;color:var(--ink);opacity:.85}
+@keyframes dmPulse{0%,100%{opacity:1}50%{opacity:.35}}
+.demo-app .stagewrap{position:relative}
+.dm-marquee{position:absolute;left:0;right:0;top:9%;z-index:40;overflow:hidden;pointer-events:none;color:#fff;opacity:.55;mix-blend-mode:normal}
+.dm-track{display:inline-flex;white-space:nowrap;animation:dmScroll 26s linear infinite}
+.dm-track span{font-family:var(--display);font-weight:800;font-size:clamp(1.2rem,2.6vw,1.9rem);padding:0 3rem;letter-spacing:.08em;text-shadow:0 1px 3px rgba(0,0,0,.75),0 0 12px rgba(0,0,0,.45)}
+@keyframes dmScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.dm-big{animation:none}.dm-track{animation-duration:60s}}
 </style>
 </head>
 <body>
@@ -7306,7 +7317,7 @@ function demoSeg(act,opts,cur){ return '<div class="seg">'+opts.map(function(o){
 function demoHtml(){
   var ex=DEMO_EX.filter(function(e){return e.k===D.ex;})[0], bg=demoUsesBg();
   var cards=DEMO_EX.map(function(e){ return '<button class="dm-ex" data-dact="ex" data-v="'+e.k+'" aria-pressed="'+(D.ex===e.k)+'"><b>'+esc(e.t)+'</b><small>'+esc(e.d)+'</small></button>'; }).join("");
-  return '<div class="dm-wrap"><h1 class="dm-h">Try an exercise</h1>'+
+  return '<div class="dm-wrap"><p class="dm-copy">© Alexander Riccardi · Demo version only</p><div class="dm-big" role="img" aria-label="Demo version only. Not for patient treatment.">DEMO<span>Demo version only · Not for patient treatment</span></div><h1 class="dm-h">Try an exercise</h1>'+
     '<p class="dm-lede">This demo shows a few exercises and backgrounds from Cerebella. Choose one, set the background, and start.</p>'+
     '<div class="dm-grid" role="group" aria-label="Demo exercises">'+cards+'</div>'+
     '<div class="panel bgpick">'+
@@ -7317,8 +7328,8 @@ function demoHtml(){
       (demoFwdOk() ? '<div class="pgroup"><b><label for="dmFwd">Forward speed</label></b><div class="mini-slider"><input id="dmFwd" type="range" min="0.25" max="4" step="0.05" value="'+D.fwd+'"><output for="dmFwd">'+D.fwd.toFixed(2)+'×</output></div></div>' : '')+
       (bg ? bgNote(D.theme,+D.lv) : '')+
     '</div>'+
-    '<div class="dm-go"><button class="btn primary" data-dact="start">Start '+esc(ex.t)+'</button><small>Each demo runs for one minute. You can change the target speed and background during the exercise too.</small></div>'+
-    '<p class="dm-foot">Demo only. Not a treatment plan. Stop and sit down if you feel unwell.</p></div>';
+    '<div class="dm-go"><button class="btn primary" data-dact="start">Start '+esc(ex.t)+'</button><small>Each demo runs for 15 seconds. You can change the target speed and background during the exercise too.</small></div>'+
+    '<p class="dm-foot">Demo only. Not for patient treatment. Stop and sit down if you feel unwell.</p><p class="dm-copy dm-copy-b">© Alexander Riccardi · Demo version only</p></div>';
 }
 function demoHome(){
   S.screen="demo"; $("#top").hidden=false; $("#app").hidden=false; $("#tabs").hidden=true; $("#stepWrap").hidden=true;
@@ -7327,7 +7338,7 @@ function demoHome(){
 function demoStart(){
   var def=DEMO_EX.filter(function(e){return e.k===D.ex;})[0];
   var base=buildExercises(5).filter(function(e){ return e.title===def.f; })[0]; if(!base){ toast("This exercise is not available"); return; }
-  var c=copyEx(base); c.on=true; c.sets=2; c.setSec=30; c.rest=0;
+  var c=copyEx(base); c.on=true; c.sets=1; c.setSec=15; c.rest=0;
   P.prefs.speed=D.speed;
   var fw=Object.assign({},P.prefs.fwd||{}); fw[D.theme]=D.fwd; P.prefs.fwd=fw;
   S.level=3; S.focus=null; S.restBetween=0; S.mode="Demo"; S.deg=null;
@@ -7354,6 +7365,9 @@ document.addEventListener("keydown",function(e){ if(!sessionLive()) return; var 
 /* only the demo's six backgrounds in the session menu */
 $$("#sTheme option").forEach(function(o){ if(DEMO_THEMES.indexOf(o.value)<0) o.remove(); });
 document.body.classList.add("demo-app");
+(function(){ var m=document.createElement("div"); m.className="dm-marquee"; m.setAttribute("role","note"); m.setAttribute("aria-label","Demo, not for patient treatment");
+  var t=""; for(var i=0;i<6;i++) t+="<span>DEMO · NOT FOR PATIENT TREATMENT</span>";
+  m.innerHTML='<div class="dm-track" aria-hidden="true">'+t+t+'</div>'; var se=$("#session .stagewrap"); se.appendChild(m); })();
 startGuest();
 demoHome();
 
