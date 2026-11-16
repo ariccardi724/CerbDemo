@@ -900,6 +900,13 @@ html[data-contrast="high"] .start .vr3d{filter:none;-webkit-text-fill-color:#ffe
 .demo-app .brand::after{content:"Demo";margin-left:10px;padding:2px 10px;border-radius:999px;border:1px solid var(--accent);color:var(--accent);font-size:.8rem;font-weight:700}
 .dm-wrap{max-width:980px;margin:0 auto;padding:24px 18px 48px}
 .dm-h{font-family:var(--display);font-size:clamp(1.8rem,4vw,2.6rem);margin:8px 0 6px}
+.dm-tour{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 24px;margin:0 0 30px;padding:22px 24px;border:1.5px solid var(--accent);background:linear-gradient(135deg,var(--accent-soft),transparent 70%)}
+.dm-tour-txt{flex:1 1 300px}.dm-tour-txt h2{font-family:var(--display);margin:0 0 6px;font-size:1.6rem}.dm-tour-txt p{margin:0;color:var(--muted)}
+.dm-tour-ctl{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px}
+.dm-tour-btn{font-size:1.2rem;padding:15px 28px}
+.dm-tlv{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);font-weight:600}
+.dm-tlv .sel{min-width:190px;padding:12px 10px;font-size:1rem}
+.dm-h2{font-size:clamp(1.4rem,3vw,1.9rem)!important}
 .dm-lede{color:var(--muted);max-width:62ch;margin:0 0 22px}
 .dm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:18px}
 .dm-ex{text-align:left;display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font:inherit}
@@ -924,9 +931,14 @@ html[data-contrast="high"] .start .vr3d{filter:none;-webkit-text-fill-color:#ffe
 .dm-steps{flex-basis:100%;margin:4px 0 0;padding-left:1.4rem;line-height:1.7}
 @keyframes dmPulse{0%,100%{opacity:1}50%{opacity:.35}}
 .demo-app .stagewrap{position:relative}
-.dm-marquee{position:absolute;left:0;right:0;top:9%;z-index:40;overflow:hidden;pointer-events:none;color:#fff;opacity:.55;mix-blend-mode:normal}
+.dm-marquee{position:absolute;left:0;right:0;top:10px;z-index:40;overflow:hidden;pointer-events:none;color:#fff;opacity:.55;mix-blend-mode:normal}
 .dm-track{display:inline-flex;white-space:nowrap;animation:dmScroll 26s linear infinite}
 .dm-track span{font-family:var(--display);font-weight:800;font-size:clamp(1.2rem,2.6vw,1.9rem);padding:0 3rem;letter-spacing:.08em;text-shadow:0 1px 3px rgba(0,0,0,.75),0 0 12px rgba(0,0,0,.45)}
+.dm-exlabel{position:absolute;left:18px;bottom:16px;z-index:40;pointer-events:none;display:flex;flex-direction:column;gap:2px;padding:8px 14px;border-radius:12px;background:rgba(6,14,22,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:#fff;max-width:60%}
+.dm-exlabel b{font-family:var(--display);font-size:clamp(1rem,2vw,1.35rem);letter-spacing:.01em}
+.dm-exlabel span{font-size:.85rem;opacity:.8}
+.dm-exlabel:empty{display:none}
+.dm-marquee.low{top:58px}
 @keyframes dmScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.dm-big{animation:none}.dm-track{animation-duration:60s}}
 </style>
@@ -7330,8 +7342,8 @@ function demoSeg(act,opts,cur){ return '<div class="seg">'+opts.map(function(o){
 function demoHtml(){
   var ex=DEMO_EX.filter(function(e){return e.k===D.ex;})[0], bg=demoUsesBg();
   var cards=DEMO_EX.map(function(e){ return '<button class="dm-ex" data-dact="ex" data-v="'+e.k+'" aria-pressed="'+(D.ex===e.k)+'"><b>'+esc(e.t)+'</b><small>'+esc(e.d)+'</small></button>'; }).join("");
-  return '<div class="dm-wrap"><p class="dm-copy">© Alexander Riccardi · Demo version only</p><div class="dm-big" role="img" aria-label="Demo version only. Not for patient treatment.">DEMO<span>Demo version only · Not for patient treatment</span></div><h1 class="dm-h">Try an exercise</h1>'+
-    '<p class="dm-lede">This demo shows a few exercises and backgrounds from Cerebella. Choose one, set the background, and start.</p>'+
+  return '<div class="dm-wrap"><p class="dm-copy">© Alexander Riccardi · Demo version only</p><div class="dm-big" role="img" aria-label="Demo version only. Not for patient treatment.">DEMO<span>Demo version only · Not for patient treatment</span></div>'+tourHtml()+'<h2 class="dm-h dm-h2">Or choose a single exercise</h2>'+
+    '<p class="dm-lede">Pick one exercise, set its background, and start.</p>'+
     '<div class="dm-grid" role="group" aria-label="Demo exercises">'+cards+'</div>'+
     '<div class="panel bgpick">'+
       (bg ? '<div class="pgroup" role="group" aria-label="Background theme"><b>Background</b>'+demoSeg("theme",DEMO_THEMES.map(function(t){return [t,THEMES[t].name];}),D.theme)+'<small>'+esc(THEMES[D.theme].blurb)+'</small></div>'+
@@ -7359,6 +7371,50 @@ function demoStart(){
   S.bgTheme=D.theme; S.bgPick=String(D.lv); S.list=[c];
   startSession();
 }
+
+/* ---------- guided tour: one full loop through every exercise type ---------- */
+var TOUR=[
+  {f:"Smooth pursuit: H-pattern", th:"grocery"},
+  {f:"Saccades: random", th:"neural"},
+  {f:"VOR x1 horizontal", th:"drive"},
+  {f:"Optokinetic stripes: moving left", th:null},
+  {f:"VOR x2 vertical", th:"classic"},
+  {f:"Dot tracking: follow one color", th:"neural"},
+  {f:"VOR cancellation horizontal", th:"classic"},
+  {f:"VOR x2 horizontal", th:"neural"},
+  {f:"Saccades: diagonal, top left to bottom right", th:"boat"}
+];
+var TOUR_SEC=8; D.tourLv=3;
+function tourLevelSel(){ var n=["Gentle","Light","Moderate","Busy","Intense","Most intense"];
+  return '<label class="dm-tlv"><span>Background level</span><select id="dmTourLv" class="sel">'+n.map(function(t,i){ return '<option value="'+(i+1)+'"'+(D.tourLv===i+1?" selected":"")+'>'+(i+1)+' · '+t+'</option>'; }).join("")+'</select></label>'; }
+function tourHtml(){
+  return '<section class="dm-tour panel" aria-labelledby="dmTourH"><div class="dm-tour-txt"><h2 id="dmTourH">Full demo</h2><p>One guided loop through every type of exercise, '+TOUR_SEC+' seconds each, with a different background for each one.</p></div>'+
+    '<div class="dm-tour-ctl"><button class="btn primary dm-tour-btn" data-dact="tour">▶ Start full demo</button>'+tourLevelSel()+'</div></section>';
+}
+function demoTour(){
+  var all=buildExercises(5), lv=D.tourLv, list=[];
+  TOUR.forEach(function(t){ var b=all.filter(function(e){ return e.title===t.f; })[0]; if(!b) return;
+    var c=copyEx(b); c.on=true; c.sets=1; c.setSec=TOUR_SEC; c.rest=0; if(t.th){ c.dmTheme=t.th; c.dmLv=lv; } list.push(c); });
+  if(!list.length){ toast("The demo could not start"); return; }
+  P.prefs.speed=D.speed;
+  S.level=3; S.focus=null; S.restBetween=0; S.mode="Demo"; S.deg=null;
+  var first=list.filter(function(c){return c.dmTheme;})[0];
+  S.bgTheme=first.dmTheme; S.bgPick=String(lv); S.list=list;
+  startSession();
+}
+/* each tour step brings its own background */
+var dmLoadChapter=loadChapter;
+loadChapter=function(){ var s=S.sess, c=cur();
+  if(s && c && c.dmTheme){ s.theme=c.dmTheme; s.bg=isScene(c.dmTheme)?sceneLv(c.dmLv):c.dmLv; }
+  dmLoadChapter(); if(typeof syncBgSel==="function") syncBgSel(); dmLabel(); };
+var DM_NAMES={"Smooth pursuit: H-pattern":"H-pattern tracking","Saccades: random":"Random saccades","VOR x1 horizontal":"VOR x1 with letter",
+  "Optokinetic stripes: moving left":"Optokinetic stripes: left","VOR x2 vertical":"VOR x2 vertical","Dot tracking: follow one color":"Peripheral colored dot tracking",
+  "VOR cancellation horizontal":"VOR cancellation","VOR x2 horizontal":"VOR x2 horizontal","Saccades: diagonal, top left to bottom right":"Diagonal saccades"};
+function dmLabel(){ var el=$("#dmExLabel"), s=S.sess, c=s&&cur(); if(!el||!c) return; var mq=$(".dm-marquee"); if(mq) mq.classList.toggle("low",/^Dot tracking/.test(c.title));
+  var bg=c.demo==="ocular"||c.demo==="gaze" ? THEMES[themeOf(s.theme)].name : "";
+  el.innerHTML='<b>'+esc(DM_NAMES[c.title]||c.title)+'</b>'+(bg?'<span>'+esc(bg)+'</span>':''); }
+document.addEventListener("change",function(e){ if(e.target.id==="sTheme") setTimeout(dmLabel,0); });
+function demoTourGo(){ var risky=D.tourLv>=5; if(risky) ensureX6(demoTour,function(){}); else demoTour(); }
 /* the full app's flows all come back to the demo menu */
 go=function(){ demoHome(); };
 buildResult=function(){}; saveResult=function(){};
@@ -7366,11 +7422,12 @@ toCheckIn=function(){ var s=S.sess; s.over=true; clearResume(); endSessionView()
 document.addEventListener("click",function(e){
   var b=e.target.closest("[data-dact]"); if(!b) return;
   var a=b.getAttribute("data-dact"), v=b.getAttribute("data-v");
-  if(a==="ex") D.ex=v; else if(a==="theme") D.theme=v; else if(a==="lv") D.lv=+v; else if(a==="start"){ demoStart(); return; } else if(a==="install"){ demoInstall(); return; }
+  if(a==="ex") D.ex=v; else if(a==="theme") D.theme=v; else if(a==="lv") D.lv=+v; else if(a==="start"){ demoStart(); return; } else if(a==="install"){ demoInstall(); return; } else if(a==="tour"){ demoTourGo(); return; }
   demoHome(); var again=$('[data-dact="'+a+'"][data-v="'+v+'"]'); if(again) again.focus();
 });
 document.addEventListener("input",function(e){
   var t=e.target;
+  if(t.id==="dmTourLv"){ D.tourLv=+t.value; }
   if(t.id==="dmSpeed"){ D.speed=+t.value; t.nextElementSibling.textContent=D.speed.toFixed(2)+"×"; }
   if(t.id==="dmFwd"){ D.fwd=+t.value; t.nextElementSibling.textContent=D.fwd.toFixed(2)+"×"; }
 });
@@ -7381,7 +7438,7 @@ $$("#sTheme option").forEach(function(o){ if(DEMO_THEMES.indexOf(o.value)<0) o.r
 document.body.classList.add("demo-app");
 (function(){ var m=document.createElement("div"); m.className="dm-marquee"; m.setAttribute("role","note"); m.setAttribute("aria-label","Demo, not for patient treatment");
   var t=""; for(var i=0;i<6;i++) t+="<span>DEMO · NOT FOR PATIENT TREATMENT</span>";
-  m.innerHTML='<div class="dm-track" aria-hidden="true">'+t+t+'</div>'; var se=$("#session .stagewrap"); se.appendChild(m); })();
+  m.innerHTML='<div class="dm-track" aria-hidden="true">'+t+t+'</div>'; var se=$("#session .stagewrap"); se.appendChild(m); var lb=document.createElement("div"); lb.id="dmExLabel"; lb.className="dm-exlabel"; lb.setAttribute("aria-hidden","true"); se.appendChild(lb); })();
 
 /* ---------- install (iPhone, Android, desktop) ---------- */
 var dmPrompt=null, dmHelp=false;
